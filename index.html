@@ -1,1 +1,175 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial Biométrico</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      margin: 20px;
+    }
+
+    .container {
+      width: 95%;
+      margin: auto;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #334155;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #1e293b;
+    }
+
+    tr:nth-child(even) {
+      background: #1e293b;
+    }
+
+    input {
+      padding: 8px;
+      width: 200px;
+      margin: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .contador {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+<h1>🔐 Sistema de Control Biométrico</h1>
+
+<input type="text" id="buscador" placeholder="Buscar por nombre o CI">
+
+<div class="contador">
+  Registros: <span id="total">0</span>
+</div>
+
+<div class="container">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>CI</th>
+        <th>Correo</th>
+        <th>Teléfono</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+  </table>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+// 🔥 CONFIGURACIÓN FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyDVpGpkISzExa078G9ZCzAl3_VLZ2G3e7o",
+  authDomain: "biometrico-f8751.firebaseapp.com",
+  databaseURL: "https://biometrico-f8751-default-rtdb.firebaseio.com/",
+  projectId: "biometrico-f8751",
+  storageBucket: "biometrico-f8751.firebasestorage.app",
+  messagingSenderId: "423419157016",
+  appId: "1:423419157016:web:aae91ac8448c7ea47e416d"
+};
+
+// 🔥 INICIAR FIREBASE
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const tabla = document.getElementById("tabla");
+const total = document.getElementById("total");
+const buscador = document.getElementById("buscador");
+
+let listaGlobal = [];
+
+// 🔥 LEER DATOS EN TIEMPO REAL
+const accesosRef = ref(db, "accesos");
+
+onValue(accesosRef, (snapshot) => {
+
+  const data = snapshot.val();
+  tabla.innerHTML = "";
+
+  if (!data) {
+    total.innerText = 0;
+    return;
+  }
+
+  listaGlobal = Object.values(data).reverse();
+
+  mostrarDatos(listaGlobal);
+
+});
+
+// 🔍 FUNCIÓN MOSTRAR DATOS
+function mostrarDatos(lista) {
+
+  tabla.innerHTML = "";
+  total.innerText = lista.length;
+
+  lista.forEach(u => {
+
+    let fila = `
+      <tr>
+        <td>${u.id}</td>
+        <td>${u.nombre}</td>
+        <td>${u.ci}</td>
+        <td>${u.correo}</td>
+        <td>${u.telefono}</td>
+        <td>${u.fecha}</td>
+      </tr>
+    `;
+
+    tabla.innerHTML += fila;
+  });
+}
+
+// 🔎 BUSCADOR EN TIEMPO REAL
+buscador.addEventListener("keyup", () => {
+
+  let texto = buscador.value.toLowerCase();
+
+  let filtrados = listaGlobal.filter(u =>
+    (u.nombre && u.nombre.toLowerCase().includes(texto)) ||
+    (u.ci && u.ci.toLowerCase().includes(texto))
+  );
+
+  mostrarDatos(filtrados);
+});
+
+</script>
+
+</body>
+</html>
 
